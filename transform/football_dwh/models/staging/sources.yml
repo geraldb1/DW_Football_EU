@@ -1,0 +1,7 @@
+version: 2
+sources:
+  - name: season_football
+    database: football_dwh
+    schema: bronze
+    tables:
+      - name: partidos
