@@ -1,0 +1,1 @@
+from config import DB_SERVER,DB_NAME
