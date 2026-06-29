@@ -1,5 +1,5 @@
 SELECT 
-    JSON_VALUE(p1.payload_json,'$.homeTeam.id') AS id_equipo,
+    TRY_CAST(JSON_VALUE(p1.payload_json,'$.homeTeam.id')AS INT) AS id_equipo,
     JSON_VALUE(p1.payload_json,'$.homeTeam.name') AS nombre_equipo,
     JSON_VALUE(p1.payload_json,'$.homeTeam.shortName') AS nombrecorto_equipo,
     JSON_VALUE(p1.payload_json,'$.homeTeam.tla') AS tla_equipo
