@@ -1,0 +1,57 @@
+version: 2
+
+models:
+  - name: dim_liga
+    columns:
+      - name: id_competicion
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_equipo
+    columns:
+      - name: id
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_temporada
+    columns:
+      - name: id
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_fecha
+    columns:
+      - name: fecha
+        tests:
+          - unique
+          - not_null
+
+  - name: fact_partido
+    columns:
+      - name: id_partido
+        tests:
+          - unique
+          - not_null
+      - name: id_competicion
+        tests:
+          - relationships:
+              to: ref('dim_liga')
+              field: id_competicion
+      - name: id_temporada
+        tests:
+          - relationships:
+              to: ref('dim_temporada')
+              field: id
+      - name: codlocal_partido
+        tests:
+          - relationships:
+              to: ref('dim_equipo')
+              field: id
+      - name: codvisitante_partido
+        tests:
+          - relationships:
+              to: ref('dim_equipo')
+              field: id

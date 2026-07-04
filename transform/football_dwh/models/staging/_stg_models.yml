@@ -1,0 +1,30 @@
+version: 2
+
+models:
+  - name: stg_partido
+    columns:
+      - name: resultado_partido
+        tests:
+          - accepted_values:
+              values: ['AWAY_TEAM','DRAW','HOME_TEAM']
+      - name: estado_partido
+        tests:
+          - accepted_values:
+              values: ['AWARDED','FINISHED']
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
