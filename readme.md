@@ -1,6 +1,6 @@
 # Football DWH — Data Warehouse de las 5 Grandes Ligas Europeas
 
-Data Warehouse construido desde cero con datos de [football-data.org](https://www.football-data.org), cubriendo Premier League, La Liga, Bundesliga, Serie A y Ligue 1. Proyecto de aprendizaje personal, con énfasis en decisiones de diseño justificadas con datos reales, no supuestos.
+Data Warehouse construido desde cero con datos de [football-data.org](https://www.football-data.org), cubriendo Premier League, La Liga, Bundesliga, Serie A y Ligue 1.
 
 ## Estado del proyecto: ✅ Pipeline completo — Bronze → Staging → Marts funcional y validado
 
@@ -18,17 +18,13 @@ Data Warehouse construido desde cero con datos de [football-data.org](https://ww
 | Transformación | dbt Core 1.11.11 + dbt-sqlserver 1.10.0 |
 | Orquestación futura | Airflow (pendiente — roadmap DE) |
 
-**Fuentes evaluadas y descartadas:** StatsBomb Open Data (cobertura irregular entre ligas/temporadas), WhoScored/FBref/SofaScore/Understat (acceso vía scraping no autorizado), footballdata.io (límite mensual de 1,000 requests, datos avanzados en planes pagos).
-
-**Fuera de alcance (Fase 2 futura, documentada pero no construida):** torneos continentales de clubes (Champions/Europa League — requieren tabla de hechos separada por grano distinto), enriquecimiento con eventos de partido (córners, tarjetas, plantillas, valores de mercado).
-
 ---
 
 ## Arquitectura
 
 ```
 API football-data.org
-        │
+        │  correr pip install requirements.txt
         ▼  src/extract.py (idempotente, respeta rate limit)
    data/raw/*.json   (15 archivos: una liga-temporada por archivo)
         │
@@ -139,6 +135,9 @@ transform/football_dwh/
 | `accepted_values` | `resultado_partido` | `stg_partido` |
 | `accepted_values` | `estado_partido` | `stg_partido` |
 | custom | goles >= 0 | `fact_partido` |
+
+![alt text](image.png)
+
 
 ---
 

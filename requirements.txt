@@ -1,0 +1,12 @@
+# Pipeline Python (extract + load)
+pandas==2.3.0
+pyodbc>=4.0.39
+python-dotenv>=1.0.0
+requests==2.32.3
+SQLAlchemy>=2.0.0
+
+# dbt
+dbt-core==1.11.11
+dbt-sqlserver==1.10.0
+dbt-adapters==1.24.2
+dbt-common==1.38.0
