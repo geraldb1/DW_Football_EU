@@ -2,7 +2,7 @@
 
 Data Warehouse construido desde cero con datos de [football-data.org](https://www.football-data.org), cubriendo Premier League, La Liga, Bundesliga, Serie A y Ligue 1.
 
-## Estado del proyecto: ✅ Pipeline completo — Bronze → Staging → Marts funcional y validado
+## Estado del proyecto: ✅ Pipeline completo — Bronze → Staging → Marts funcional, validado y contenerizado (Docker Compose)
 
 ---
 
@@ -16,6 +16,7 @@ Data Warehouse construido desde cero con datos de [football-data.org](https://ww
 | Plan API | Free tier (10 calls/minuto) |
 | Motor de base de datos | SQL Server Express (local) |
 | Transformación | dbt Core 1.11.11 + dbt-sqlserver 1.10.0 |
+| Contenerización | Docker + Docker Compose (pipeline + dbt, orquestados) |
 | Orquestación futura | Airflow (pendiente — roadmap DE) |
 
 ---
@@ -24,7 +25,7 @@ Data Warehouse construido desde cero con datos de [football-data.org](https://ww
 
 ```
 API football-data.org
-        │  correr pip install requirements.txt
+        │
         ▼  src/extract.py (idempotente, respeta rate limit)
    data/raw/*.json   (15 archivos: una liga-temporada por archivo)
         │
@@ -169,7 +170,13 @@ DW_F_EU/
 │   ├── load.py            # carga idempotente: JSON → bronze.partidos
 │   └── main.py            # orquesta extract → load
 ├── transform/
-│   └── football_dwh/      # proyecto dbt (staging + marts + tests + docs)
+│   └── football_dwh/      # proyecto dbt (staging + marts + tests + docs + profiles.yml)
+├── Dockerfile            # imagen del pipeline Python (extract + load)
+├── Dockerfile.dbt        # imagen de dbt (transform)
+├── docker-compose.yml    # orquesta pipeline → dbt
+├── .dockerignore
+├── requirements.txt      # dependencias del pipeline (van al contenedor)
+├── requirements-dbt.txt  # dependencias de dbt (solo entorno local)
 ├── .env.example
 ├── .gitignore
 └── readme.md
@@ -179,7 +186,34 @@ DW_F_EU/
 
 ## Cómo correr este proyecto
 
-### Pipeline de extracción y carga (bronze)
+### Opción A — Docker (recomendado): todo el pipeline con un comando
+
+Levanta el pipeline completo (extract → load → dbt) orquestado, sin instalar Python ni dbt localmente. Solo requiere Docker Desktop y el SQL Server accesible por TCP.
+
+**Requisitos previos (una sola vez):**
+- SQL Server con TCP/IP habilitado en puerto fijo `1433`, autenticación mixta, y un login SQL dedicado con permisos sobre la base.
+- Archivo `.env` en la raíz (a partir de `.env.example`) con `API_TOKEN`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`.
+
+```powershell
+docker compose up      # construye ambas imágenes y corre pipeline → dbt en orden
+docker compose down    # limpia los contenedores al terminar
+```
+
+El servicio `dbt` no arranca hasta que el `pipeline` termina con éxito (`depends_on: service_completed_successfully`). El contenedor alcanza el SQL Server del host vía `host.docker.internal,1433`.
+
+Para correr una sola imagen por separado:
+
+```powershell
+# Solo pipeline (extract + load)
+docker run --rm --env-file .env -e DB_AUTH=sql -e DB_SERVER=host.docker.internal,1433 -v "${PWD}\data:/app/data" football-dwh-pipeline
+
+# Solo dbt (transform)
+docker run --rm --env-file .env -e DB_SERVER=host.docker.internal,1433 football-dwh-dbt
+```
+
+### Opción B — Local (sin contenedores)
+
+#### Pipeline de extracción y carga (bronze)
 
 1. Instalar SQL Server Express
 2. Crear el archivo `.env` a partir de `.env.example`
@@ -190,9 +224,12 @@ DW_F_EU/
    - `sql/03_ddl_partidos.sql` (conectado a `football_dwh`)
 5. `python src/main.py` — descarga lo que falte y carga lo que falte. Seguro de re-ejecutar cuantas veces sea necesario.
 
-### Capa de transformación (dbt)
+#### Capa de transformación (dbt)
+
+dbt se instala aparte del pipeline (no va en la imagen del contenedor de extracción):
 
 ```bash
+pip install -r requirements-dbt.txt
 cd transform/football_dwh
 dbt seed          # carga mapeo_nombres_liga.csv
 dbt run           # construye staging y marts en orden
@@ -201,19 +238,6 @@ dbt docs generate # genera documentación y lineage
 dbt docs serve    # abre el lineage en http://localhost:8080
 ```
 
----
 
-## Roadmap
-
-- [x] **Bloque 1** — Definición de alcance (ligas, temporadas, fuente de datos)
-- [x] **Bloque 2** — Diseño del modelo dimensional + EDA completo
-- [x] **Bloque 3** — Extracción (`extract.py`: idempotente, respeta rate limit)
-- [x] **Bloque 4** — Carga a bronze (`load.py`: semicrudo, idempotente, anti-duplicados)
-- [x] **Bloque 5** — Transformación con dbt (6 staging + 7 marts + 17 tests + lineage)
-- [ ] Conexión a Power BI (dm.* como fuente)
-- [ ] *(Futuro)* Lógica de temporada activa (agosto 2026): MERGE incremental, ventana de gracia de 30 días
-- [ ] *(Futuro)* Dockerización del pipeline completo
-- [ ] *(Futuro)* Orquestación con Airflow
-- [ ] *(Fase 2)* Torneos continentales, enriquecimiento con eventos de partido
 
 ---
