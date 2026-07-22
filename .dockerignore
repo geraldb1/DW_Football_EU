@@ -1,0 +1,15 @@
+.env
+.git/
+.gitignore
+.vscode/
+data/
+logs/
+notebook/
+sql/
+__pycache__/
+**/__pycache__/
+*.png
+readme.md
+transform/football_dwh/target/
+transform/football_dwh/dbt_packages/
+transform/football_dwh/logs/

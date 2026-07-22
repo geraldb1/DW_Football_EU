@@ -1,0 +1,38 @@
+football_dbt:
+  outputs:
+    dev:
+      database: football_prediction
+      driver: ODBC Driver 17 for SQL Server
+      encrypt: false
+      port: 1433
+      schema: dbt_dev
+      server: BRANDON\SQLEXPRESS
+      trust_cert: true
+      trusted_connection: true
+      type: sqlserver
+  target: dev
+football_dwh:
+  target: dev
+  outputs:
+    dev:
+      type: sqlserver
+      driver: ODBC Driver 17 for SQL Server
+      server: BRANDON\SQLEXPRESS
+      port: 1433
+      database: football_dwh
+      schema: dbo
+      trusted_connection: true
+      encrypt: false
+      trust_cert: true
+      threads: 4
+    docker:
+      type: sqlserver
+      driver: ODBC Driver 18 for SQL Server
+      server: "{{ env_var('DB_SERVER', 'host.docker.internal,1433') }}"
+      database: football_dwh
+      schema: dbo
+      user: "{{ env_var('DB_USER') }}"
+      password: "{{ env_var('DB_PASSWORD') }}"
+      encrypt: true
+      trust_cert: true
+      threads: 4

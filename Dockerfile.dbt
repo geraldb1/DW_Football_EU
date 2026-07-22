@@ -1,0 +1,26 @@
+FROM python:3.13-slim-bookworm
+
+WORKDIR /app
+
+# Mismo driver ODBC que la otra imagen
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl ca-certificates \
+    && curl -sSL -o /tmp/msprod.deb \
+        https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb \
+    && dpkg -i /tmp/msprod.deb \
+    && rm /tmp/msprod.deb \
+    && apt-get update \
+    && ACCEPT_EULA=Y apt-get install -y --no-install-recommends msodbcsql18 unixodbc-dev \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Dependencias de dbt (el archivo que acabas de crear)
+COPY requirements-dbt.txt .
+RUN pip install --no-cache-dir -r requirements-dbt.txt
+
+# El proyecto dbt completo
+COPY transform/football_dwh/ ./
+
+# Le decimos a dbt dónde buscar profiles.yml
+ENV DBT_PROFILES_DIR=/app
+
+CMD ["dbt", "build", "--target", "docker"]

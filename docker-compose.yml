@@ -1,0 +1,29 @@
+services:
+
+  pipeline:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: football-dwh-pipeline
+    env_file: .env
+    environment:
+      DB_AUTH: sql
+      DB_SERVER: host.docker.internal,1433
+    volumes:
+      - ./data:/app/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  dbt:
+    build:
+      context: .
+      dockerfile: Dockerfile.dbt
+    image: football-dwh-dbt
+    env_file: .env
+    environment:
+      DB_SERVER: host.docker.internal,1433
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      pipeline:
+        condition: service_completed_successfully

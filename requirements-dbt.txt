@@ -1,0 +1,5 @@
+# dbt (entorno local, no va al contenedor)
+dbt-core==1.11.11
+dbt-sqlserver==1.10.0
+dbt-adapters==1.24.2
+dbt-common==1.38.0
